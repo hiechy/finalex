@@ -23,7 +23,7 @@ from(select * from free where l_Id = #{l_Id} order by f_date desc)e)where rm bet
 
 </select>
 
-<select id="freeCnt" parameterType="String" resultType="int">
+<select id="freeCnt" parameterType="int" resultType="int">
 select count(*) from free where l_Id = #{l_Id} 
 </select> 
 
@@ -79,7 +79,7 @@ insert into freereply values
 ((select nvl(max(fr_num),0) from freereply)+1, #{num},#{userid},#{replyCon},(select m_Pic from lib_member where m_Id=#{userid}),#{replyPw})
 </insert>
 
-<select id="selectLocation" parameterType="String" resultType="lvo">
+<select id="selectLocation" parameterType="int" resultType="lvo">
 select * from library where l_id=#{l_Id}
 </select>
 

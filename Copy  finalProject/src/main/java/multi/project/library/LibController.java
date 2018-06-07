@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,47 +17,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class LibController {
+    
+	  
     @Autowired
-	FreeDAO dao;
-	  /*@RequestMapping("/Freelist")
-	  public ModelAndView freelist(@RequestParam(value="pagenum", defaultValue="1") String pagenum){
-		  
-		    int pageint=Integer.parseInt(pagenum);
-	    	int start=((pageint-1)*10+1);
-	    	int end=(pageint*10);
-	    	int[]param={start,end};
-	    	List<FreeVO> list=dao.freeli(param);
-	    	
-	    	int cnt=dao.freecnt();
-            Map<String,Object> map=new HashMap<String,Object>();
-			map.put("count",cnt);
-			map.put("list",list);
-			
-	    	ModelAndView mv = new ModelAndView();
-	    	
-	  		int count=(Integer) map.get("count");
-	   		int totalPage=0;
-	   		if(count%10==0){
-	   			
-	   			totalPage=count/10;
-	   		}else{
-	   			
-	   			totalPage=count/10+1;
-	   		}
-	   		mv.addObject("totalpage",totalPage);
-	   		mv.addObject("freelist",(List<FreeVO>)map.get("list"));
-	   		mv.setViewName("/Free");
-	   		return mv;
-	}*/
+    FreeService fser;
+    
 	  @RequestMapping("/LibraryMain")
 	  public ModelAndView libraryMain(HttpSession sessionId){
 		 
-		  sessionId.setAttribute("libraryId", "1");//임의로 도서관 아이디 세션 생성 
+		  sessionId.setAttribute("libraryId", 1);//임의로 도서관 아이디 세션 생성 
 		  sessionId.setAttribute("userid", "Park");//임의로 세션아이디 생성
-		  String libraryId=(String)sessionId.getAttribute("libraryId");
+		  int libraryId=(Integer)sessionId.getAttribute("libraryId");
 		  ModelAndView mv = new ModelAndView();
-		  LibraryVO lib=dao.location(libraryId);//도서관 아이디 세션 넣을자리
-		  List<MemberVO> mem= dao.memberInfo((String) sessionId.getAttribute("userid"));//회원아이디 세션 넣을 자리
+		  LibraryVO lib=fser.location(libraryId);//도서관 아이디 세션 넣을자리
+		  List<MemberVO> mem= fser.memberInfo((String) sessionId.getAttribute("userid"));//회원아이디 세션 넣을 자리
 		  mv.addObject("lat",lib.getL_Latitude());//위도
 	   	  mv.addObject("lon",lib.getL_Longtitude());//경도
 	   	  mv.addObject("libraryName",lib.getL_Name());
@@ -78,13 +52,13 @@ public class LibController {
 	    	Map<String,Object> map=new HashMap<String,Object>();
 	    	map.put("l_Id", sessionId.getAttribute("libraryId"));//도서관 아이디세션 넣을자리
 	    	map.put("num", free);
-	    	List<FreeVO> list=dao.freeList(map);
+	    	List<FreeVO> list=fser.freeList(map);
 	    	ModelAndView mv = new ModelAndView();
-	    	List<MemberVO> mem= dao.memberInfo((String) sessionId.getAttribute("userid"));//회원아이디 세션 넣을 자리
+	    	List<MemberVO> mem= fser.memberInfo((String) sessionId.getAttribute("userid"));//회원아이디 세션 넣을 자리
 	    	
 	    	
-	    	String cnt = (String)sessionId.getAttribute("libraryId");//도서관 아이디 세션 넣을 자리
-	    	int count=dao.freeCnt(cnt);
+	    	int cnt = (Integer)sessionId.getAttribute("libraryId");//도서관 아이디 세션 넣을 자리
+	    	int count=fser.freeCnt(cnt);
 	   		int totalPage=0;
 	   		if(count%10==0){
 	   			
@@ -107,19 +81,11 @@ public class LibController {
 	  @ResponseBody
 	  public FreeVO freeSelectlist(int num ){
 		
-		  FreeVO result = dao.freeSelectList(num);
+		  FreeVO result = fser.freeSelectList(num);
 		 
 		  return result;
 	  }//free page 글내용 보기 ajax
 	  
-	  @RequestMapping("/FreeSelectlist2")
-	  @ResponseBody
-	  public FreeVO freeSelectlist2(int num ){
-		
-		  FreeVO result = dao.freeSelectList(num);
-		 
-		  return result;
-	  }//search page 글내용 보기 ajax
 	  
 	  @RequestMapping("/FreeSearch")
 	  public ModelAndView freeserchlist
@@ -136,12 +102,12 @@ public class LibController {
 		  ma.put("searchBy",searchBy);
 		  ma.put("searchText",searchText);
 		  
-		  List<FreeVO> list2=dao.freeSearch(ma);
-		  List<MemberVO> mem= dao.memberInfo((String) sessionId.getAttribute("userid"));//회원아이디 세션 넣을 자리
+		  List<FreeVO> list2=fser.freeSearch(ma);
+		  List<MemberVO> mem= fser.memberInfo((String) sessionId.getAttribute("userid"));//회원아이디 세션 넣을 자리
 //		  for (int j = 0; j < list2.size(); j++) {
 //			  System.out.println(list2.get(j).getF_Content());
 //		  }
-		    int count=dao.freeSerchCnt(ma);
+		    int count=fser.freeSerchCnt(ma);
 	    	int totalPage=0;
 	   		if(count%10==0){
 	   			totalPage=count/10;
@@ -168,20 +134,20 @@ public class LibController {
 	  @RequestMapping(value="/Insert", method=RequestMethod.POST)
 	  public void insertSuccess(String contents,String title, String pw,HttpSession sessionId){
 		 //System.out.println(title+" "+contents+" "+pw);
-		 Map<String,String> map= new HashMap<String,String>();
-		 map.put("l_Id", (String) sessionId.getAttribute("libraryId"));//도서관 아이디 세션 넣을 자리
+		 Map<String,Object> map= new HashMap<String,Object>();
+		 map.put("l_Id",  sessionId.getAttribute("libraryId"));//도서관 아이디 세션 넣을 자리
 		 map.put("contents", contents);
 		 map.put("title", title);
 		 map.put("pw", pw);
 		 map.put("m_Id", (String) sessionId.getAttribute("userid"));//회원 아이디 세션 넣을 자리
-		 dao.FreeInsert(map); 
+		 fser.FreeInsert(map); 
 	}//자유게시판 입력
 	  
 	  @RequestMapping(value="/ReplyView", method=RequestMethod.POST)
 	  @ResponseBody
 	  public List<FreeReplyVO> freeReply(int num ){
 		
-		  List<FreeReplyVO> result = dao.freeReply(num);
+		  List<FreeReplyVO> result = fser.freeReply(num);
 		//  System.out.println(sessionId.getAttribute("userid"));
 		  return result;
 	  }//댓글 보기 ajax
@@ -192,7 +158,7 @@ public class LibController {
 		  //System.out.println(deleteReply+"번 삭제 비번 : "+deletePw);
 		  map.put("number", deleteReply);//해당 댓글 번호
 		  map.put("pw", deletePw);
-		  dao.replyDelete(map);//댓글삭제
+		  fser.replyDelete(map);//댓글삭제
 		 
 		  return "redirect:/Freelist";
 		  //"redirect:/Freelist";
@@ -203,7 +169,7 @@ public class LibController {
 		 // System.out.println(deleteReply+"번 삭제 비번 : "+deletePw);
 		  map.put("number", deleteReply);
 		  map.put("pw", deletePw);
-		  dao.replyDelete(map);//댓글삭제
+		  fser.replyDelete(map);//댓글삭제
 		 
 		  return "redirect://FreeSearch";
 		  //"redirect:/Freelist";
@@ -216,8 +182,8 @@ public class LibController {
 		  System.out.println(deleteReply+"번 삭제 비번 : "+deletePw);
 		  map.put("number", deleteReply);
 		  map.put("pw", deletePw);
-		  dao.replyDelete(map);//댓글삭제
-		  List<FreeReplyVO> result = dao.freeReply(num);//댓글불러오기
+		  fser.replyDelete(map);//댓글삭제
+		  List<FreeReplyVO> result = fser.freeReply(num);//댓글불러오기
 		  return result;
 		  //"redirect:/Freelist";
 	  }//ajax 이용한 리플삭제
@@ -231,8 +197,8 @@ public class LibController {
 		  map.put("userid", userid);
 		  map.put("replyCon", replyCon);
 		  map.put("replyPw", replyPw);
-		  dao.insertReply(map);//댓글 삽입
-		  List<FreeReplyVO> result = dao.freeReply(num);//댓글불러오기
+		  fser.insertReply(map);//댓글 삽입
+		  List<FreeReplyVO> result = fser.freeReply(num);//댓글불러오기
 		  return result;
 	  }//리플 입력
 	  
@@ -250,8 +216,8 @@ public class LibController {
 		  Map<String,Object> map= new HashMap<String,Object>();
 		  map.put("f_Num", freeNumber);//해당 글번호
 		  map.put("f_Pw", password);
-		  dao.deleteContReply(freeNumber);//해당글 리플 지우기
-		  dao.deleteCont(map);//해당글 지우기
+		  fser.deleteContReply(freeNumber);//해당글 리플 지우기
+		  fser.deleteCont(map);//해당글 지우기
 		  
 			
 		  return "redirect:/Freelist";
@@ -260,7 +226,7 @@ public class LibController {
 	  @RequestMapping(value="/UserPicSelect",method=RequestMethod.GET)
 	  public String UserPicSelect(){
 		 // ModelAndView mv= new ModelAndView();
-		 //String userpic=dao.getpic();
+		 //String userpic=fser.getpic();
 		 // mv.add
 		  
 		  return "/UserPic";
@@ -272,8 +238,9 @@ public class LibController {
 		  Map<String,String> map= new HashMap<String,String>();
 		  map.put("id", (String) sessionId.getAttribute("userid"));
 		  map.put("pic", userpic);
-		  dao.changePic(map);
+		  fser.changePic(map);
 		  
 	  }//아바타 변경
 	  
 }
+

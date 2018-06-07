@@ -21,7 +21,7 @@ public class FreeDAO {
     	return se.selectList("Library.freePageAll",map);
     }//자우게시판 페이지 불러오기
     
-    public int freeCnt(String cnt){
+    public int freeCnt(int cnt){
     	//System.out.println("카운팅");
     	return se.selectOne("Library.freeCnt",cnt);
     }//자유게시판 페이징 처리용 카운팅
@@ -40,7 +40,7 @@ public class FreeDAO {
     	return se.selectOne("Library.freeSearchCnt",map);
     }//글검색 내용 페이징처리용 카운팅
 
-	public void FreeInsert(Map<String,String> map) {
+	public void FreeInsert(Map<String,Object> map) {
 		//System.out.println("입력");
 		se.insert("Library.freeInsert",map);
 	}//자유게시판 게시물 작성
@@ -69,7 +69,7 @@ public class FreeDAO {
 		se.insert("Library.insertReply",map);
 	}
 
-	public LibraryVO location(String l_Id) {
+	public LibraryVO location(int l_Id) {
 		//System.out.println("위치찾기! "+l_Id);
 		return se.selectOne("Library.selectLocation",l_Id);
 	}

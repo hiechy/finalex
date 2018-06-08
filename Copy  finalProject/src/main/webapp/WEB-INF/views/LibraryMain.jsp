@@ -6,6 +6,13 @@
 <head>
 <meta charset=UTF-8">
 <title><%=request.getAttribute("libraryName")%></title>
+<!-- 부트스트랩 CSS 추가하기 -->
+<link rel="stylesheet" href="./css/bootstrap.min.css">
+<!-- 커스텀 CSS 추가하기 -->
+<link rel="stylesheet" href="./css/custom.css">
+
+
+
 <style type="text/css">
 #userIdTag
 {background-color: lightblue;
@@ -93,6 +100,10 @@ body
 <input type="hidden" value=<%=request.getAttribute("lon") %> id='maplon'><!-- 경도 -->
 </body>
 <script src="/library/resources/jquery-3.2.1.min.js"></script>
+<!-- 부트스트랩 자바스크립트 추가하기 -->
+<script src="./js/bootstrap.min.js"></script>
+<!-- 파퍼 자바스크립트 추가하기 -->
+<script src="./js/popper.min.js"></script>
 <script type="text/javascript">
 $("#map").on('click',function(){
 		//alert($("#maplat").val()+" "+$("#maplon").val())
@@ -123,7 +134,7 @@ $("#map").on('click',function(){
 
 $('#userpic').on("click",function(){
 	 //alert("그림변경")
-	    var ww=340;    //띄울 창의 넓이
+	    var ww=350;    //띄울 창의 넓이
 		var wh=150;    //띄울 창의 높이
 		
 		var top=(screen.availHeight-wh)/4;
